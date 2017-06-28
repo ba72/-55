@@ -113,27 +113,6 @@ module Google
             )
           end
 
-          # Parses the project from a project resource.
-          # @param project_name [String]
-          # @return [String]
-          def self.match_project_from_project_name project_name
-            PROJECT_PATH_TEMPLATE.match(project_name)["project"]
-          end
-
-          # Parses the project from a group resource.
-          # @param group_name [String]
-          # @return [String]
-          def self.match_project_from_group_name group_name
-            GROUP_PATH_TEMPLATE.match(group_name)["project"]
-          end
-
-          # Parses the group from a group resource.
-          # @param group_name [String]
-          # @return [String]
-          def self.match_group_from_group_name group_name
-            GROUP_PATH_TEMPLATE.match(group_name)["group"]
-          end
-
           # @param service_path [String]
           #   The domain name of the API remote host.
           # @param port [Integer]
@@ -142,6 +121,12 @@ module Google
           #   A Channel object through which to make calls.
           # @param chan_creds [Grpc::ChannelCredentials]
           #   A ChannelCredentials for the setting up the RPC client.
+          # @param updater_proc [Proc]
+          #   A function that transforms the metadata for requests, e.g., to give
+          #   OAuth credentials.
+          # @param scopes [Array<String>]
+          #   The OAuth scopes for this service. This parameter is ignored if
+          #   an updater_proc is supplied.
           # @param client_config[Hash]
           #   A Hash for call options for each method. See
           #   Google::Gax#construct_settings for the structure of
@@ -154,6 +139,7 @@ module Google
               port: DEFAULT_SERVICE_PORT,
               channel: nil,
               chan_creds: nil,
+              updater_proc: nil,
               scopes: ALL_SCOPES,
               client_config: {},
               timeout: DEFAULT_TIMEOUT,
@@ -199,6 +185,7 @@ module Google
               port,
               chan_creds: chan_creds,
               channel: channel,
+              updater_proc: updater_proc,
               scopes: scopes,
               &Google::Monitoring::V3::GroupService::Stub.method(:new)
             )
@@ -267,12 +254,10 @@ module Google
           #   object.
           # @raise [Google::Gax::GaxError] if the RPC is aborted.
           # @example
-          #   require "google/cloud/monitoring/v3/group_service_client"
+          #   require "google/cloud/monitoring/v3"
           #
-          #   GroupServiceClient = Google::Cloud::Monitoring::V3::GroupServiceClient
-          #
-          #   group_service_client = GroupServiceClient.new
-          #   formatted_name = GroupServiceClient.project_path("[PROJECT]")
+          #   group_service_client = Google::Cloud::Monitoring::V3::GroupServiceClient.new
+          #   formatted_name = Google::Cloud::Monitoring::V3::GroupServiceClient.project_path("[PROJECT]")
           #
           #   # Iterate over all results.
           #   group_service_client.list_groups(formatted_name).each do |element|
@@ -294,13 +279,14 @@ module Google
               descendants_of_group: nil,
               page_size: nil,
               options: nil
-            req = Google::Monitoring::V3::ListGroupsRequest.new({
+            req = {
               name: name,
               children_of_group: children_of_group,
               ancestors_of_group: ancestors_of_group,
               descendants_of_group: descendants_of_group,
               page_size: page_size
-            }.delete_if { |_, v| v.nil? })
+            }.delete_if { |_, v| v.nil? }
+            req = Google::Gax::to_proto(req, Google::Monitoring::V3::ListGroupsRequest)
             @list_groups.call(req, options)
           end
 
@@ -315,20 +301,19 @@ module Google
           # @return [Google::Monitoring::V3::Group]
           # @raise [Google::Gax::GaxError] if the RPC is aborted.
           # @example
-          #   require "google/cloud/monitoring/v3/group_service_client"
+          #   require "google/cloud/monitoring/v3"
           #
-          #   GroupServiceClient = Google::Cloud::Monitoring::V3::GroupServiceClient
-          #
-          #   group_service_client = GroupServiceClient.new
-          #   formatted_name = GroupServiceClient.group_path("[PROJECT]", "[GROUP]")
+          #   group_service_client = Google::Cloud::Monitoring::V3::GroupServiceClient.new
+          #   formatted_name = Google::Cloud::Monitoring::V3::GroupServiceClient.group_path("[PROJECT]", "[GROUP]")
           #   response = group_service_client.get_group(formatted_name)
 
           def get_group \
               name,
               options: nil
-            req = Google::Monitoring::V3::GetGroupRequest.new({
+            req = {
               name: name
-            }.delete_if { |_, v| v.nil? })
+            }.delete_if { |_, v| v.nil? }
+            req = Google::Gax::to_proto(req, Google::Monitoring::V3::GetGroupRequest)
             @get_group.call(req, options)
           end
 
@@ -337,9 +322,11 @@ module Google
           # @param name [String]
           #   The project in which to create the group. The format is
           #   +"projects/{project_id_or_number}"+.
-          # @param group [Google::Monitoring::V3::Group]
+          # @param group [Google::Monitoring::V3::Group | Hash]
           #   A group definition. It is an error to define the +name+ field because
           #   the system assigns the name.
+          #   A hash of the same form as `Google::Monitoring::V3::Group`
+          #   can also be provided.
           # @param validate_only [true, false]
           #   If true, validate this request but do not create the group.
           # @param options [Google::Gax::CallOptions]
@@ -348,14 +335,11 @@ module Google
           # @return [Google::Monitoring::V3::Group]
           # @raise [Google::Gax::GaxError] if the RPC is aborted.
           # @example
-          #   require "google/cloud/monitoring/v3/group_service_client"
+          #   require "google/cloud/monitoring/v3"
           #
-          #   Group = Google::Monitoring::V3::Group
-          #   GroupServiceClient = Google::Cloud::Monitoring::V3::GroupServiceClient
-          #
-          #   group_service_client = GroupServiceClient.new
-          #   formatted_name = GroupServiceClient.project_path("[PROJECT]")
-          #   group = Group.new
+          #   group_service_client = Google::Cloud::Monitoring::V3::GroupServiceClient.new
+          #   formatted_name = Google::Cloud::Monitoring::V3::GroupServiceClient.project_path("[PROJECT]")
+          #   group = {}
           #   response = group_service_client.create_group(formatted_name, group)
 
           def create_group \
@@ -363,20 +347,23 @@ module Google
               group,
               validate_only: nil,
               options: nil
-            req = Google::Monitoring::V3::CreateGroupRequest.new({
+            req = {
               name: name,
               group: group,
               validate_only: validate_only
-            }.delete_if { |_, v| v.nil? })
+            }.delete_if { |_, v| v.nil? }
+            req = Google::Gax::to_proto(req, Google::Monitoring::V3::CreateGroupRequest)
             @create_group.call(req, options)
           end
 
           # Updates an existing group.
           # You can change any group attributes except +name+.
           #
-          # @param group [Google::Monitoring::V3::Group]
+          # @param group [Google::Monitoring::V3::Group | Hash]
           #   The new definition of the group.  All fields of the existing group,
           #   excepting +name+, are replaced with the corresponding fields of this group.
+          #   A hash of the same form as `Google::Monitoring::V3::Group`
+          #   can also be provided.
           # @param validate_only [true, false]
           #   If true, validate this request but do not update the existing group.
           # @param options [Google::Gax::CallOptions]
@@ -385,23 +372,21 @@ module Google
           # @return [Google::Monitoring::V3::Group]
           # @raise [Google::Gax::GaxError] if the RPC is aborted.
           # @example
-          #   require "google/cloud/monitoring/v3/group_service_client"
+          #   require "google/cloud/monitoring/v3"
           #
-          #   Group = Google::Monitoring::V3::Group
-          #   GroupServiceClient = Google::Cloud::Monitoring::V3::GroupServiceClient
-          #
-          #   group_service_client = GroupServiceClient.new
-          #   group = Group.new
+          #   group_service_client = Google::Cloud::Monitoring::V3::GroupServiceClient.new
+          #   group = {}
           #   response = group_service_client.update_group(group)
 
           def update_group \
               group,
               validate_only: nil,
               options: nil
-            req = Google::Monitoring::V3::UpdateGroupRequest.new({
+            req = {
               group: group,
               validate_only: validate_only
-            }.delete_if { |_, v| v.nil? })
+            }.delete_if { |_, v| v.nil? }
+            req = Google::Gax::to_proto(req, Google::Monitoring::V3::UpdateGroupRequest)
             @update_group.call(req, options)
           end
 
@@ -415,20 +400,19 @@ module Google
           #   retries, etc.
           # @raise [Google::Gax::GaxError] if the RPC is aborted.
           # @example
-          #   require "google/cloud/monitoring/v3/group_service_client"
+          #   require "google/cloud/monitoring/v3"
           #
-          #   GroupServiceClient = Google::Cloud::Monitoring::V3::GroupServiceClient
-          #
-          #   group_service_client = GroupServiceClient.new
-          #   formatted_name = GroupServiceClient.group_path("[PROJECT]", "[GROUP]")
+          #   group_service_client = Google::Cloud::Monitoring::V3::GroupServiceClient.new
+          #   formatted_name = Google::Cloud::Monitoring::V3::GroupServiceClient.group_path("[PROJECT]", "[GROUP]")
           #   group_service_client.delete_group(formatted_name)
 
           def delete_group \
               name,
               options: nil
-            req = Google::Monitoring::V3::DeleteGroupRequest.new({
+            req = {
               name: name
-            }.delete_if { |_, v| v.nil? })
+            }.delete_if { |_, v| v.nil? }
+            req = Google::Gax::to_proto(req, Google::Monitoring::V3::DeleteGroupRequest)
             @delete_group.call(req, options)
             nil
           end
@@ -452,11 +436,13 @@ module Google
           #   instances, use this filter:
           #
           #       resource.type = "gce_instance"
-          # @param interval [Google::Monitoring::V3::TimeInterval]
+          # @param interval [Google::Monitoring::V3::TimeInterval | Hash]
           #   An optional time interval for which results should be returned. Only
           #   members that were part of the group during the specified interval are
           #   included in the response.  If no interval is provided then the group
           #   membership over the last minute is returned.
+          #   A hash of the same form as `Google::Monitoring::V3::TimeInterval`
+          #   can also be provided.
           # @param options [Google::Gax::CallOptions]
           #   Overrides the default settings for this call, e.g, timeout,
           #   retries, etc.
@@ -467,12 +453,10 @@ module Google
           #   object.
           # @raise [Google::Gax::GaxError] if the RPC is aborted.
           # @example
-          #   require "google/cloud/monitoring/v3/group_service_client"
+          #   require "google/cloud/monitoring/v3"
           #
-          #   GroupServiceClient = Google::Cloud::Monitoring::V3::GroupServiceClient
-          #
-          #   group_service_client = GroupServiceClient.new
-          #   formatted_name = GroupServiceClient.group_path("[PROJECT]", "[GROUP]")
+          #   group_service_client = Google::Cloud::Monitoring::V3::GroupServiceClient.new
+          #   formatted_name = Google::Cloud::Monitoring::V3::GroupServiceClient.group_path("[PROJECT]", "[GROUP]")
           #
           #   # Iterate over all results.
           #   group_service_client.list_group_members(formatted_name).each do |element|
@@ -493,12 +477,13 @@ module Google
               filter: nil,
               interval: nil,
               options: nil
-            req = Google::Monitoring::V3::ListGroupMembersRequest.new({
+            req = {
               name: name,
               page_size: page_size,
               filter: filter,
               interval: interval
-            }.delete_if { |_, v| v.nil? })
+            }.delete_if { |_, v| v.nil? }
+            req = Google::Gax::to_proto(req, Google::Monitoring::V3::ListGroupMembersRequest)
             @list_group_members.call(req, options)
           end
         end
