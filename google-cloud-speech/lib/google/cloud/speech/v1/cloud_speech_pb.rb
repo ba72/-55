@@ -36,6 +36,9 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     optional :max_alternatives, :int32, 4
     optional :profanity_filter, :bool, 5
     repeated :speech_contexts, :message, 6, "google.cloud.speech.v1.SpeechContext"
+    optional :enable_word_time_offsets, :bool, 8
+    optional :enable_automatic_punctuation, :bool, 11
+    optional :metadata, :message, 9, "google.cloud.speech.v1.RecognitionMetadata"
   end
   add_enum "google.cloud.speech.v1.RecognitionConfig.AudioEncoding" do
     value :ENCODING_UNSPECIFIED, 0
@@ -46,6 +49,55 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     value :AMR_WB, 5
     value :OGG_OPUS, 6
     value :SPEEX_WITH_HEADER_BYTE, 7
+  end
+  add_message "google.cloud.speech.v1.RecognitionMetadata" do
+    optional :interaction_type, :enum, 1, "google.cloud.speech.v1.RecognitionMetadata.InteractionType"
+    optional :industry_naics_code_of_audio, :uint32, 3
+    optional :microphone_distance, :enum, 4, "google.cloud.speech.v1.RecognitionMetadata.MicrophoneDistance"
+    optional :original_media_type, :enum, 5, "google.cloud.speech.v1.RecognitionMetadata.OriginalMediaType"
+    optional :number_of_speakers, :enum, 6, "google.cloud.speech.v1.RecognitionMetadata.NumberOfSpeakers"
+    optional :recording_device_type, :enum, 7, "google.cloud.speech.v1.RecognitionMetadata.RecordingDeviceType"
+    optional :recording_device_name, :string, 8
+    optional :original_mime_type, :string, 9
+    optional :obfuscated_id, :int64, 10
+    optional :audio_topic, :string, 11
+  end
+  add_enum "google.cloud.speech.v1.RecognitionMetadata.InteractionType" do
+    value :INTERACTION_TYPE_UNSPECIFIED, 0
+    value :DISCUSSION, 1
+    value :PRESENTATION, 2
+    value :PHONE_CALL, 3
+    value :VOICEMAIL, 4
+    value :PROFESSIONALLY_PRODUCED, 5
+    value :VOICE_SEARCH, 6
+    value :VOICE_COMMAND, 7
+    value :DICTATION, 8
+  end
+  add_enum "google.cloud.speech.v1.RecognitionMetadata.MicrophoneDistance" do
+    value :MICROPHONE_DISTANCE_UNSPECIFIED, 0
+    value :NEARFIELD, 1
+    value :MIDFIELD, 2
+    value :FARFIELD, 3
+  end
+  add_enum "google.cloud.speech.v1.RecognitionMetadata.OriginalMediaType" do
+    value :ORIGINAL_MEDIA_TYPE_UNSPECIFIED, 0
+    value :AUDIO, 1
+    value :VIDEO, 2
+  end
+  add_enum "google.cloud.speech.v1.RecognitionMetadata.NumberOfSpeakers" do
+    value :NUMBER_OF_SPEAKERS_UNSPECIFIED, 0
+    value :ONE_SPEAKER, 1
+    value :TWO_SPEAKERS, 2
+    value :MULTIPLE_SPEAKERS, 3
+  end
+  add_enum "google.cloud.speech.v1.RecognitionMetadata.RecordingDeviceType" do
+    value :RECORDING_DEVICE_TYPE_UNSPECIFIED, 0
+    value :SMARTPHONE, 1
+    value :PC, 2
+    value :PHONE_LINE, 3
+    value :VEHICLE, 4
+    value :OTHER_OUTDOOR_DEVICE, 5
+    value :OTHER_INDOOR_DEVICE, 6
   end
   add_message "google.cloud.speech.v1.SpeechContext" do
     repeated :phrases, :string, 1
@@ -87,6 +139,12 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
   add_message "google.cloud.speech.v1.SpeechRecognitionAlternative" do
     optional :transcript, :string, 1
     optional :confidence, :float, 2
+    repeated :words, :message, 3, "google.cloud.speech.v1.WordInfo"
+  end
+  add_message "google.cloud.speech.v1.WordInfo" do
+    optional :start_time, :message, 1, "google.protobuf.Duration"
+    optional :end_time, :message, 2, "google.protobuf.Duration"
+    optional :word, :string, 3
   end
 end
 
@@ -100,6 +158,12 @@ module Google
         StreamingRecognitionConfig = Google::Protobuf::DescriptorPool.generated_pool.lookup("google.cloud.speech.v1.StreamingRecognitionConfig").msgclass
         RecognitionConfig = Google::Protobuf::DescriptorPool.generated_pool.lookup("google.cloud.speech.v1.RecognitionConfig").msgclass
         RecognitionConfig::AudioEncoding = Google::Protobuf::DescriptorPool.generated_pool.lookup("google.cloud.speech.v1.RecognitionConfig.AudioEncoding").enummodule
+        RecognitionMetadata = Google::Protobuf::DescriptorPool.generated_pool.lookup("google.cloud.speech.v1.RecognitionMetadata").msgclass
+        RecognitionMetadata::InteractionType = Google::Protobuf::DescriptorPool.generated_pool.lookup("google.cloud.speech.v1.RecognitionMetadata.InteractionType").enummodule
+        RecognitionMetadata::MicrophoneDistance = Google::Protobuf::DescriptorPool.generated_pool.lookup("google.cloud.speech.v1.RecognitionMetadata.MicrophoneDistance").enummodule
+        RecognitionMetadata::OriginalMediaType = Google::Protobuf::DescriptorPool.generated_pool.lookup("google.cloud.speech.v1.RecognitionMetadata.OriginalMediaType").enummodule
+        RecognitionMetadata::NumberOfSpeakers = Google::Protobuf::DescriptorPool.generated_pool.lookup("google.cloud.speech.v1.RecognitionMetadata.NumberOfSpeakers").enummodule
+        RecognitionMetadata::RecordingDeviceType = Google::Protobuf::DescriptorPool.generated_pool.lookup("google.cloud.speech.v1.RecognitionMetadata.RecordingDeviceType").enummodule
         SpeechContext = Google::Protobuf::DescriptorPool.generated_pool.lookup("google.cloud.speech.v1.SpeechContext").msgclass
         RecognitionAudio = Google::Protobuf::DescriptorPool.generated_pool.lookup("google.cloud.speech.v1.RecognitionAudio").msgclass
         RecognizeResponse = Google::Protobuf::DescriptorPool.generated_pool.lookup("google.cloud.speech.v1.RecognizeResponse").msgclass
@@ -110,6 +174,7 @@ module Google
         StreamingRecognitionResult = Google::Protobuf::DescriptorPool.generated_pool.lookup("google.cloud.speech.v1.StreamingRecognitionResult").msgclass
         SpeechRecognitionResult = Google::Protobuf::DescriptorPool.generated_pool.lookup("google.cloud.speech.v1.SpeechRecognitionResult").msgclass
         SpeechRecognitionAlternative = Google::Protobuf::DescriptorPool.generated_pool.lookup("google.cloud.speech.v1.SpeechRecognitionAlternative").msgclass
+        WordInfo = Google::Protobuf::DescriptorPool.generated_pool.lookup("google.cloud.speech.v1.WordInfo").msgclass
       end
     end
   end

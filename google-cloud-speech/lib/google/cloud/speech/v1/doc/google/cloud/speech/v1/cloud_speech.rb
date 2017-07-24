@@ -56,7 +56,7 @@ module Google
         #     +audio_content+ data. The audio bytes must be encoded as specified in
         #     +RecognitionConfig+. Note: as with all bytes fields, protobuffers use a
         #     pure binary representation (not base64). See
-        #     {audio limits}[https://cloud.google.com/speech/limits#content].
+        #     [audio limits](https://cloud.google.com/speech/limits#content).
         class StreamingRecognizeRequest; end
 
         # Provides information to the recognizer that specifies how to process the
@@ -101,9 +101,9 @@ module Google
         # @!attribute [rw] language_code
         #   @return [String]
         #     *Required* The language of the supplied audio as a
-        #     {BCP-47}[https://www.rfc-editor.org/rfc/bcp/bcp47.txt] language tag.
+        #     [BCP-47](https://www.rfc-editor.org/rfc/bcp/bcp47.txt) language tag.
         #     Example: "en-US".
-        #     See {Language Support}[https://cloud.google.com/speech/docs/languages]
+        #     See [Language Support](https://cloud.google.com/speech/docs/languages)
         #     for a list of the currently supported language codes.
         # @!attribute [rw] max_alternatives
         #   @return [Integer]
@@ -122,11 +122,28 @@ module Google
         # @!attribute [rw] speech_contexts
         #   @return [Array<Google::Cloud::Speech::V1::SpeechContext>]
         #     *Optional* A means to provide context to assist the speech recognition.
+        # @!attribute [rw] enable_word_time_offsets
+        #   @return [true, false]
+        #     *Optional* If +true+, a list of +words+ are returned in the top result,
+        #     containing the start and end timestamps for those words. The default value,
+        #     'false' does not return any word-level timing information.
+        # @!attribute [rw] enable_automatic_punctuation
+        #   @return [true, false]
+        #     *Optional* If 'true', adds punctuation to recognition result hypotheses.
+        #     This feature is only available in select languages. Setting this for
+        #     requests in other languages has no effect at all.
+        #     The default 'false' value does not add punctuation to result hypotheses.
+        #     NOTE: "This is currently offered as an experimental service, complimentary
+        #     to all users. In the future this may be exclusively available as a
+        #     premium feature."
+        # @!attribute [rw] metadata
+        #   @return [Google::Cloud::Speech::V1::RecognitionMetadata]
+        #     *Optional* Metadata regarding this request.
         class RecognitionConfig
           # Audio encoding of the data sent in the audio message. All encodings support
-          # only 1 channel (mono) audio. Only +FLAC+ includes a header that describes
-          # the bytes of audio that follow the header. The other encodings are raw
-          # audio bytes with no header.
+          # only 1 channel (mono) audio. Only +FLAC+ and +WAV+ include a header that
+          # describes the bytes of audio that follow the header. The other encodings
+          # are raw audio bytes with no header.
           #
           # For best results, the audio source should be captured and transmitted using
           # a lossless encoding (+FLAC+ or +LINEAR16+). Recognition accuracy may be
@@ -134,13 +151,13 @@ module Google
           # this section, are used to capture or transmit the audio, particularly if
           # background noise is present.
           module AudioEncoding
-            # Not specified. Will return result Google::Rpc::Code::INVALID_ARGUMENT.
+            # Not specified. Will return result {Google::Rpc::Code::INVALID_ARGUMENT}.
             ENCODING_UNSPECIFIED = 0
 
             # Uncompressed 16-bit signed little-endian samples (Linear PCM).
             LINEAR16 = 1
 
-            # {+FLAC+}[https://xiph.org/flac/documentation.html] (Free Lossless Audio
+            # [+FLAC+](https://xiph.org/flac/documentation.html) (Free Lossless Audio
             # Codec) is the recommended encoding because it is
             # lossless--therefore recognition is not compromised--and
             # requires only about half the bandwidth of +LINEAR16+. +FLAC+ stream
@@ -158,17 +175,17 @@ module Google
             AMR_WB = 5
 
             # Opus encoded audio frames in Ogg container
-            # ({OggOpus}[https://wiki.xiph.org/OggOpus]).
+            # ([OggOpus](https://wiki.xiph.org/OggOpus)).
             # +sample_rate_hertz+ must be 16000.
             OGG_OPUS = 6
 
             # Although the use of lossy encodings is not recommended, if a very low
             # bitrate encoding is required, +OGG_OPUS+ is highly preferred over
-            # Speex encoding. The {Speex}[https://speex.org/]  encoding supported by
+            # Speex encoding. The [Speex](https://speex.org/)  encoding supported by
             # Cloud Speech API has a header byte in each block, as in MIME type
             # +audio/x-speex-with-header-byte+.
             # It is a variant of the RTP Speex encoding defined in
-            # {RFC 5574}[https://tools.ietf.org/html/rfc5574].
+            # [RFC 5574](https://tools.ietf.org/html/rfc5574).
             # The stream is a sequence of blocks, one block per RTP packet. Each block
             # starts with a byte containing the length of the block, in bytes, followed
             # by one or more frames of Speex data, padded to an integral number of
@@ -176,6 +193,156 @@ module Google
             # is replaced with a single byte containing the block length. Only Speex
             # wideband is supported. +sample_rate_hertz+ must be 16000.
             SPEEX_WITH_HEADER_BYTE = 7
+          end
+        end
+
+        # Description of audio data to be recognized.
+        # @!attribute [rw] interaction_type
+        #   @return [Google::Cloud::Speech::V1::RecognitionMetadata::InteractionType]
+        #     The use case most closely describing the audio content to be recognized.
+        # @!attribute [rw] industry_naics_code_of_audio
+        #   @return [Integer]
+        #     The industry vertical to which this speech recognition request most
+        #     closely applies. This is most indicative of the topics contained
+        #     in the audio.  Use the 6-digit NAICS code to identify the industry
+        #     vertical - see https://www.naics.com/search/.
+        # @!attribute [rw] microphone_distance
+        #   @return [Google::Cloud::Speech::V1::RecognitionMetadata::MicrophoneDistance]
+        #     The audio type that most closely describes the audio being recognized.
+        # @!attribute [rw] original_media_type
+        #   @return [Google::Cloud::Speech::V1::RecognitionMetadata::OriginalMediaType]
+        #     The original media the speech was recorded on.
+        # @!attribute [rw] number_of_speakers
+        #   @return [Google::Cloud::Speech::V1::RecognitionMetadata::NumberOfSpeakers]
+        #     How many people are speaking prominently in the audio and expected to be
+        #     recognized.
+        # @!attribute [rw] recording_device_type
+        #   @return [Google::Cloud::Speech::V1::RecognitionMetadata::RecordingDeviceType]
+        #     The type of device the speech was recorded with.
+        # @!attribute [rw] recording_device_name
+        #   @return [String]
+        #     The device used to make the recording.  Examples 'Nexus 5X' or
+        #     'Polycom SoundStation IP 6000' or 'POTS' or 'VoIP' or
+        #     'Cardioid Microphone'.
+        # @!attribute [rw] original_mime_type
+        #   @return [String]
+        #     Mime type of the original audio file.  For example +audio/m4a+,
+        #     +audio/x-alaw-basic+, +audio/mp3+, +audio/3gpp+.
+        #     A list of possible audio mime types is maintained at
+        #     http://www.iana.org/assignments/media-types/media-types.xhtml#audio
+        # @!attribute [rw] obfuscated_id
+        #   @return [Integer]
+        #     Obfuscated (privacy-protected) ID of the user.
+        # @!attribute [rw] audio_topic
+        #   @return [String]
+        #     Description of the content. Eg. "Recordings of federal supreme court
+        #     hearings from 2012".
+        class RecognitionMetadata
+          # Use case categories that the audio recognition request can be described
+          # by.
+          module InteractionType
+            # Use case is either unknown or is something other than one of the other
+            # values below.
+            INTERACTION_TYPE_UNSPECIFIED = 0
+
+            # Multiple people in a conversation or discussion. For example in a
+            # meeting with two or more people actively participating. Typically
+            # all the primary people speaking would be in the same room (if not,
+            # see PHONE_CALL)
+            DISCUSSION = 1
+
+            # One or more persons lecturing or presenting to others, mostly
+            # uninterrupted.
+            PRESENTATION = 2
+
+            # A phone-call or video-conference in which two or more people, who are
+            # not in the same room, are actively participating.
+            PHONE_CALL = 3
+
+            # A recorded message intended for another person to listen to.
+            VOICEMAIL = 4
+
+            # Professionally produced audio (eg. TV Show, Podcast).
+            PROFESSIONALLY_PRODUCED = 5
+
+            # Transcribe spoken questions and queries into text.
+            VOICE_SEARCH = 6
+
+            # Transcribe voice commands, such as for controlling a device.
+            VOICE_COMMAND = 7
+
+            # Transcribe speech to text to create a written document, such as a
+            # text-message, email or report.
+            DICTATION = 8
+          end
+
+          # Enumerates the types of capture settings describing an audio file.
+          module MicrophoneDistance
+            # Audio type is not known.
+            MICROPHONE_DISTANCE_UNSPECIFIED = 0
+
+            # The audio was captured from a closely placed microphone. Eg. phone,
+            # dictaphone, or handheld microphone. Generally if there speaker is within
+            # 1 meter of the microphone.
+            NEARFIELD = 1
+
+            # The speaker if within 3 meters of the microphone.
+            MIDFIELD = 2
+
+            # The speaker is more than 3 meters away from the microphone.
+            FARFIELD = 3
+          end
+
+          # The original media the speech was recorded on.
+          module OriginalMediaType
+            # Unknown original media type.
+            ORIGINAL_MEDIA_TYPE_UNSPECIFIED = 0
+
+            # The speech data is an audio recording.
+            AUDIO = 1
+
+            # The speech data originally recorded on a video.
+            VIDEO = 2
+          end
+
+          # How many speakers expected in the speech to be recognized.
+          module NumberOfSpeakers
+            # Unknown number of persons speaking.
+            NUMBER_OF_SPEAKERS_UNSPECIFIED = 0
+
+            # Only one person is the prominent speaker (ignore background voices).
+            ONE_SPEAKER = 1
+
+            # Two people are the prominent speakers (transcript should focus
+            # on the two most prominent speakers).
+            TWO_SPEAKERS = 2
+
+            # Transcribe all voices.
+            MULTIPLE_SPEAKERS = 3
+          end
+
+          # The type of device the speech was recorded with.
+          module RecordingDeviceType
+            # The recording device is unknown.
+            RECORDING_DEVICE_TYPE_UNSPECIFIED = 0
+
+            # Speech was recorded on a smartphone.
+            SMARTPHONE = 1
+
+            # Speech was recorded using a personal computer or tablet.
+            PC = 2
+
+            # Speech was recorded over a phone line.
+            PHONE_LINE = 3
+
+            # Speech was recorded in a vehicle.
+            VEHICLE = 4
+
+            # Speech was recorded outdoors.
+            OTHER_OUTDOOR_DEVICE = 5
+
+            # Speech was recorded indoors.
+            OTHER_INDOOR_DEVICE = 6
           end
         end
 
@@ -188,13 +355,13 @@ module Google
         #     to improve the accuracy for specific words and phrases, for example, if
         #     specific commands are typically spoken by the user. This can also be used
         #     to add additional words to the vocabulary of the recognizer. See
-        #     {usage limits}[https://cloud.google.com/speech/limits#content].
+        #     [usage limits](https://cloud.google.com/speech/limits#content).
         class SpeechContext; end
 
         # Contains audio data in the encoding specified in the +RecognitionConfig+.
         # Either +content+ or +uri+ must be supplied. Supplying both or neither
-        # returns Google::Rpc::Code::INVALID_ARGUMENT. See
-        # {audio limits}[https://cloud.google.com/speech/limits#content].
+        # returns {Google::Rpc::Code::INVALID_ARGUMENT}. See
+        # [audio limits](https://cloud.google.com/speech/limits#content).
         # @!attribute [rw] content
         #   @return [String]
         #     The audio data bytes encoded as specified in
@@ -206,8 +373,8 @@ module Google
         #     +RecognitionConfig+. Currently, only Google Cloud Storage URIs are
         #     supported, which must be specified in the following format:
         #     +gs://bucket_name/object_name+ (other URI formats return
-        #     Google::Rpc::Code::INVALID_ARGUMENT). For more information, see
-        #     {Request URIs}[https://cloud.google.com/storage/docs/reference-uris].
+        #     {Google::Rpc::Code::INVALID_ARGUMENT}). For more information, see
+        #     [Request URIs](https://cloud.google.com/storage/docs/reference-uris).
         class RecognitionAudio; end
 
         # The only message returned to the client by the +Recognize+ method. It
@@ -269,34 +436,32 @@ module Google
         # 6. results { alternatives { transcript: " that is" } stability: 0.9 }
         #    results { alternatives { transcript: " the question" } stability: 0.01 }
         #
-        # 7. speech_event_type: END_OF_SINGLE_UTTERANCE
-        #
-        # 8. results { alternatives { transcript: " that is the question"
+        # 7. results { alternatives { transcript: " that is the question"
         #                             confidence: 0.98 }
         #              alternatives { transcript: " that was the question" }
         #              is_final: true }
         #
         # Notes:
         #
-        # - Only two of the above responses #4 and #8 contain final results; they are
+        # * Only two of the above responses #4 and #7 contain final results; they are
         #   indicated by +is_final: true+. Concatenating these together generates the
         #   full transcript: "to be or not to be that is the question".
         #
-        # - The others contain interim +results+. #3 and #6 contain two interim
+        # * The others contain interim +results+. #3 and #6 contain two interim
         #   +results+: the first portion has a high stability and is less likely to
         #   change; the second portion has a low stability and is very likely to
         #   change. A UI designer might choose to show only high stability +results+.
         #
-        # - The specific +stability+ and +confidence+ values shown above are only for
+        # * The specific +stability+ and +confidence+ values shown above are only for
         #   illustrative purposes. Actual values may vary.
         #
-        # - In each response, only one of these fields will be set:
-        #     +error+,
-        #     +speech_event_type+, or
-        #     one or more (repeated) +results+.
+        # * In each response, only one of these fields will be set:
+        #   +error+,
+        #   +speech_event_type+, or
+        #   one or more (repeated) +results+.
         # @!attribute [rw] error
         #   @return [Google::Rpc::Status]
-        #     *Output-only* If set, returns a Google::Rpc::Status message that
+        #     *Output-only* If set, returns a {Google::Rpc::Status} message that
         #     specifies the error for the operation.
         # @!attribute [rw] results
         #   @return [Array<Google::Cloud::Speech::V1::StreamingRecognitionResult>]
@@ -351,6 +516,8 @@ module Google
         #   @return [Array<Google::Cloud::Speech::V1::SpeechRecognitionAlternative>]
         #     *Output-only* May contain one or more recognition hypotheses (up to the
         #     maximum specified in +max_alternatives+).
+        #     These alternatives are ordered in terms of accuracy, with the first/top
+        #     alternative being the most probable, as ranked by the recognizer.
         class SpeechRecognitionResult; end
 
         # Alternative hypotheses (a.k.a. n-best list).
@@ -363,10 +530,33 @@ module Google
         #     indicates an estimated greater likelihood that the recognized words are
         #     correct. This field is typically provided only for the top hypothesis, and
         #     only for +is_final=true+ results. Clients should not rely on the
-        #     +confidence+ field as it is not guaranteed to be accurate, or even set, in
-        #     any of the results.
+        #     +confidence+ field as it is not guaranteed to be accurate or consistent.
         #     The default of 0.0 is a sentinel value indicating +confidence+ was not set.
+        # @!attribute [rw] words
+        #   @return [Array<Google::Cloud::Speech::V1::WordInfo>]
+        #     *Output-only* List of word-specific information for each recognized word.
         class SpeechRecognitionAlternative; end
+
+        # Word-specific information detected along with speech recognition when certain
+        # request parameters are set.
+        # @!attribute [rw] start_time
+        #   @return [Google::Protobuf::Duration]
+        #     *Output-only* Time-offset, relative to the beginning of the audio,
+        #     corresponding to the start of the spoken word.
+        #     This field is only set if +enable_word_time_offsets=true+ and only
+        #     in the top hypothesis.
+        #     This is an experimental feature and accuracy may vary in accuracy.
+        # @!attribute [rw] end_time
+        #   @return [Google::Protobuf::Duration]
+        #     *Output-only* Time-offset, relative to the beginning of the audio,
+        #     corresponding to the end of the spoken word.
+        #     This field is only set if +enable_word_time_offsets=true+ and only
+        #     in the top hypothesis.
+        #     This is an experimental feature and accuracy may vary in accuracy.
+        # @!attribute [rw] word
+        #   @return [String]
+        #     *Output-only* The word corresponding to this set of information.
+        class WordInfo; end
       end
     end
   end
