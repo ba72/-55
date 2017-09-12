@@ -71,16 +71,16 @@ module Google
         #     NOTE: For new code +image_uri+ below is preferred.
         #     Google Cloud Storage image URI, which must be in the following form:
         #     +gs://bucket_name/object_name+ (for details, see
-        #     {Google Cloud Storage Request
-        #     URIs}[https://cloud.google.com/storage/docs/reference-uris]).
+        #     [Google Cloud Storage Request
+        #     URIs](https://cloud.google.com/storage/docs/reference-uris)).
         #     NOTE: Cloud Storage object versioning is not supported.
         # @!attribute [rw] image_uri
         #   @return [String]
         #     Image URI which supports:
         #     1) Google Cloud Storage image URI, which must be in the following form:
         #     +gs://bucket_name/object_name+ (for details, see
-        #     {Google Cloud Storage Request
-        #     URIs}[https://cloud.google.com/storage/docs/reference-uris]).
+        #     [Google Cloud Storage Request
+        #     URIs](https://cloud.google.com/storage/docs/reference-uris)).
         #     NOTE: Cloud Storage object versioning is not supported.
         #     2) Publicly accessible image HTTP/HTTPS URL.
         #     This is preferred over the legacy +gcs_image_uri+ above. When both
@@ -308,7 +308,7 @@ module Google
         # @!attribute [rw] mid
         #   @return [String]
         #     Opaque entity ID. Some IDs may be available in
-        #     {Google Knowledge Graph Search API}[https://developers.google.com/knowledge-graph/].
+        #     [Google Knowledge Graph Search API](https://developers.google.com/knowledge-graph/).
         # @!attribute [rw] locale
         #   @return [String]
         #     The language code for the locale in which the entity textual
@@ -448,7 +448,7 @@ module Google
         #     setting a hint will help get better results (although it will be a
         #     significant hindrance if the hint is wrong). Text detection returns an
         #     error if one or more of the specified languages is not one of the
-        #     {supported languages}[https://cloud.google.com/vision/docs/languages].
+        #     [supported languages](https://cloud.google.com/vision/docs/languages).
         # @!attribute [rw] crop_hints_params
         #   @return [Google::Cloud::Vision::V1::CropHintsParams]
         #     Parameters for crop hints annotation request.

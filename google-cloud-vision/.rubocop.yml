@@ -1,11 +1,9 @@
 AllCops:
   Exclude:
-    - "acceptance/**/*"
-    - "support/**/*"
     - "google-cloud-vision.gemspec"
-    - "Rakefile"
-    - "lib/google/cloud/vision/v1.rb"
     - "lib/google/cloud/vision/v1/**/*"
+    - "lib/google/cloud/vision/v1/**/*"
+    - "Rakefile"
     - "test/**/*"
 
 Documentation:
@@ -25,14 +23,24 @@ Style/EmptyLines:
   Enabled: false
 Style/EmptyElse:
   Enabled: false
+Style/HashSyntax:
+  Exclude:
+    - "lib/google/cloud/vision/v1/**/*"
+Metrics/LineLength:
+  Exclude:
+    - "lib/google/cloud/vision/v1/**/*"
 Metrics/CyclomaticComplexity:
   Max: 10
 Metrics/PerceivedComplexity:
   Max: 10
 Metrics/AbcSize:
   Max: 25
+  Exclude:
+    - "lib/google/cloud/vision/v1/**/*"
 Metrics/MethodLength:
   Max: 20
+  Exclude:
+    - "lib/google/cloud/vision/v1/**/*"
 Metrics/ParameterLists:
   Enabled: false
 Style/RescueModifier:
@@ -42,4 +50,4 @@ Style/ClassVars:
 Style/TrivialAccessors:
   Enabled: false
 Style/FileName:
-  Enabled: false # for lib/google-cloud-vision.rb file
+  Enabled: false
