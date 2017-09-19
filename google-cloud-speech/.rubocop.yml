@@ -1,11 +1,10 @@
 AllCops:
   Exclude:
-    - "acceptance/**/*"
     - "google-cloud-speech.gemspec"
+    - "lib/google/cloud/speech/v1/**/*"
+    - "lib/google/cloud/speech/v1/**/*"
     - "Rakefile"
-    - "support/**/*"
     - "test/**/*"
-    - "lib/google/cloud/speech/v1/*"
 
 Documentation:
   Enabled: false
@@ -24,14 +23,24 @@ Style/EmptyLines:
   Enabled: false
 Style/EmptyElse:
   Enabled: false
+Style/HashSyntax:
+  Exclude:
+    - "lib/google/cloud/speech/v1/**/*"
+Metrics/LineLength:
+  Exclude:
+    - "lib/google/cloud/speech/v1/**/*"
 Metrics/CyclomaticComplexity:
   Max: 10
 Metrics/PerceivedComplexity:
   Max: 10
 Metrics/AbcSize:
   Max: 25
+  Exclude:
+    - "lib/google/cloud/speech/v1/**/*"
 Metrics/MethodLength:
   Max: 20
+  Exclude:
+    - "lib/google/cloud/speech/v1/**/*"
 Metrics/ParameterLists:
   Enabled: false
 Style/RescueModifier:
@@ -41,4 +50,4 @@ Style/ClassVars:
 Style/TrivialAccessors:
   Enabled: false
 Style/FileName:
-  Enabled: false # for lib/google-cloud-speech.rb file
+  Enabled: false

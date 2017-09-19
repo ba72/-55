@@ -1,5 +1,6 @@
 --no-private
---title=Google Cloud Speech
+--title=Google Cloud Speech API
+--exclude lib/google/cloud/speech/v1
 --markup markdown
 
 ./lib/**/*.rb

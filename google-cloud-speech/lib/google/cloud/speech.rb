@@ -1,4 +1,4 @@
-# Copyright 2016 Google Inc. All rights reserved.
+# Copyright 2017, Google Inc. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,228 +12,115 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-require "google-cloud-speech"
-require "google/cloud/speech/project"
+require "google/gax"
+require "pathname"
 
 module Google
   module Cloud
+    # rubocop:disable LineLength
+
     ##
-    # # Google Cloud Speech
+    # # Ruby Client for Google Cloud Speech API ([Alpha](https://github.com/GoogleCloudPlatform/google-cloud-ruby#versioning))
     #
-    # Google Cloud Speech API enables developers to convert audio to text by
-    # applying powerful neural network models in an easy to use API. The API
-    # recognizes over 80 languages and variants, to support your global user
-    # base. You can transcribe the text of users dictating to an application's
-    # microphone, enable command-and-control through voice, or transcribe audio
-    # files, among many other use cases. Recognize audio uploaded in the
-    # request, and integrate with your audio storage on Google Cloud Storage, by
-    # using the same technology Google uses to power its own products.
+    # [Google Cloud Speech API][Product Documentation]:
+    # Google Cloud Speech API.
+    # - [Product Documentation][]
     #
-    # For more information about Google Cloud Speech API, read the [Google Cloud
-    # Speech API Documentation](https://cloud.google.com/speech/docs/).
+    # ## Quick Start
+    # In order to use this library, you first need to go through the following
+    # steps:
     #
-    # The goal of google-cloud is to provide an API that is comfortable to
-    # Rubyists. Authentication is handled by {Google::Cloud#speech}. You can
-    # provide the project and credential information to connect to the Cloud
-    # Speech service, or if you are running on Google Compute Engine this
-    # configuration is taken care of for you. You can read more about the
-    # options for connecting in the [Authentication
-    # Guide](https://googlecloudplatform.github.io/google-cloud-ruby/#/docs/guides/authentication).
+    # 1. [Select or create a Cloud Platform project.](https://console.cloud.google.com/project)
+    # 2. [Enable the Google Cloud Speech API.](https://console.cloud.google.com/apis/api/speech)
+    # 3. [Setup Authentication.](https://googlecloudplatform.github.io/google-cloud-ruby/#/docs/google-cloud/master/guides/authentication)
     #
-    # ## Creating audio sources
-    #
-    # You can create an audio object that holds a reference to any one of
-    # several types of audio data source, along with metadata such as the audio
-    # encoding type.
-    #
-    # Use {Speech::Project#audio} to create audio sources for the Cloud Speech
-    # API. You can provide a file path:
-    #
-    # ```ruby
-    # require "google/cloud/speech"
-    #
-    # speech = Google::Cloud::Speech.new
-    #
-    # audio = speech.audio "path/to/audio.raw",
-    #                      encoding: :linear16,
-    #                      language: "en-US",
-    #                      sample_rate: 16000
+    # ### Installation
+    # ```
+    # $ gem install google-cloud-speech
     # ```
     #
-    # Or, you can initialize the audio instance with a Google Cloud Storage URI:
-    #
-    # ```ruby
+    # ### Preview
+    # #### SpeechClient
+    # ```rb
     # require "google/cloud/speech"
     #
-    # speech = Google::Cloud::Speech.new
-    #
-    # audio = speech.audio "gs://bucket-name/path/to/audio.raw",
-    #                      encoding: :linear16,
-    #                      language: "en-US",
-    #                      sample_rate: 16000
+    # speech_client = Google::Cloud::Speech.new
+    # language_code = "en-US"
+    # sample_rate_hertz = 44100
+    # encoding = :FLAC
+    # config = {
+    #   language_code: language_code,
+    #   sample_rate_hertz: sample_rate_hertz,
+    #   encoding: encoding
+    # }
+    # uri = "gs://gapic-toolkit/hello.flac"
+    # audio = { uri: uri }
+    # response = speech_client.recognize(config, audio)
     # ```
     #
-    # Or, with a Google Cloud Storage File object:
+    # ### Next Steps
+    # - Read the [Google Cloud Speech API Product documentation][Product Documentation]
+    #   to learn more about the product and see How-to Guides.
+    # - View this [repository's main README](https://github.com/GoogleCloudPlatform/google-cloud-ruby/blob/master/README.md)
+    #   to see the full list of Cloud APIs that we cover.
     #
-    # ```ruby
-    # require "google/cloud/storage"
+    # [Product Documentation]: https://cloud.google.com/speech
     #
-    # storage = Google::Cloud::Storage.new
-    #
-    # bucket = storage.bucket "bucket-name"
-    # file = bucket.file "path/to/audio.raw"
-    #
-    # require "google/cloud/speech"
-    #
-    # speech = Google::Cloud::Speech.new
-    #
-    # audio = speech.audio file,
-    #                      encoding: :linear16,
-    #                      language: "en-US",
-    #                      sample_rate: 16000
-    # ```
-    #
-    # ## Recognizing speech
-    #
-    # The instance methods on {Speech::Audio} can be used to invoke both
-    # synchronous and asynchronous versions of the Cloud Speech API speech
-    # recognition operation.
-    #
-    # Use {Speech::Audio#recognize} for synchronous speech recognition that
-    # returns {Speech::Result} objects only after all audio has been processed.
-    # This method is limited to audio data of 1 minute or less in duration, and
-    # will take roughly the same amount of time to process as the duration of
-    # the supplied audio data.
-    #
-    # ```ruby
-    # require "google/cloud/speech"
-    #
-    # speech = Google::Cloud::Speech.new
-    #
-    # audio = speech.audio "path/to/audio.raw",
-    #                      encoding: :linear16,
-    #                      language: "en-US",
-    #                      sample_rate: 16000
-    #
-    # results = audio.recognize
-    # result = results.first
-    # result.transcript #=> "how old is the Brooklyn Bridge"
-    # result.confidence #=> 0.9826789498329163
-    # ```
-    #
-    # Use {Speech::Audio#process} for asynchronous speech recognition, in which
-    # a {Speech::Operation} is returned immediately after the audio data has
-    # been sent. The op can be refreshed to retrieve {Speech::Result} objects
-    # once the audio data has been processed.
-    #
-    # ```ruby
-    # require "google/cloud/speech"
-    #
-    # speech = Google::Cloud::Speech.new
-    #
-    # audio = speech.audio "path/to/audio.raw",
-    #                      encoding: :linear16,
-    #                      language: "en-US",
-    #                      sample_rate: 16000
-    #
-    # op = audio.process
-    # op.done? #=> false
-    # op.wait_until_done!
-    # op.done? #=> true
-    # results = op.results
-    #
-    # result = results.first
-    # result.transcript #=> "how old is the Brooklyn Bridge"
-    # result.confidence #=> 0.9826789498329163
-    # ```
-    #
-    # Use {Speech::Project#stream} for streaming audio data for speech
-    # recognition, in which a {Speech::Stream} is returned. The stream object
-    # can receive results while sending audio by performing bidirectional
-    # streaming speech-recognition.
-    #
-    # ```ruby
-    # require "google/cloud/speech"
-    #
-    # speech = Google::Cloud::Speech.new
-    #
-    # stream = speech.stream encoding: :linear16,
-    #                        language: "en-US",
-    #                        sample_rate: 16000
-    #
-    # # Stream 5 seconds of audio from the microphone
-    # # Actual implementation of microphone input varies by platform
-    # 5.times do
-    #   stream.send MicrophoneInput.read(32000)
-    # end
-    #
-    # stream.stop
-    # stream.wait_until_complete!
-    #
-    # results = stream.results
-    # result = results.first
-    # result.transcript #=> "how old is the Brooklyn Bridge"
-    # result.confidence #=> 0.9826789498329163
-    # ```
-    #
-    # Obtaining audio data from input sources such as a Microphone is outside
-    # the scope of this document.
     #
     module Speech
-      ##
-      # Creates a new object for connecting to the Speech service.
-      # Each call creates a new connection.
-      #
-      # For more information on connecting to Google Cloud see the
-      # [Authentication
-      # Guide](https://googlecloudplatform.github.io/google-cloud-ruby/#/docs/guides/authentication).
-      #
-      # @param [String] project Project identifier for the Speech service you
-      #   are connecting to.
-      # @param [String, Hash] keyfile Keyfile downloaded from Google Cloud. If
-      #   file path the file must be readable.
-      # @param [String, Array<String>] scope The OAuth 2.0 scopes controlling
-      #   the set of resources and operations that the connection can access.
-      #   See [Using OAuth 2.0 to Access Google
-      #   APIs](https://developers.google.com/identity/protocols/OAuth2).
-      #
-      #   The default scope is:
-      #
-      #   * `https://www.googleapis.com/auth/speech`
-      # @param [Integer] timeout Default timeout to use in requests. Optional.
-      # @param [Hash] client_config A hash of values to override the default
-      #   behavior of the API client. Optional.
-      #
-      # @return [Google::Cloud::Speech::Project]
-      #
-      # @example
-      #   require "google/cloud/speech"
-      #
-      #   speech = Google::Cloud::Speech.new
-      #
-      #   audio = speech.audio "path/to/audio.raw",
-      #                        encoding: :linear16,
-      #                        language: "en-US",
-      #                        sample_rate: 16000
-      #
-      def self.new project: nil, keyfile: nil, scope: nil, timeout: nil,
-                   client_config: nil
-        project ||= Google::Cloud::Speech::Project.default_project
-        project = project.to_s # Always cast to a string
-        fail ArgumentError, "project is missing" if project.empty?
+      # rubocop:enable LineLength
 
-        if keyfile.nil?
-          credentials = Google::Cloud::Speech::Credentials.default scope: scope
-        else
-          credentials = Google::Cloud::Speech::Credentials.new(
-            keyfile, scope: scope)
+      FILE_DIR = File.realdirpath(Pathname.new(__FILE__).join("..").join("speech"))
+
+      AVAILABLE_VERSIONS = Dir["#{FILE_DIR}/*"]
+        .select { |file| File.directory?(file) }
+        .select { |dir| Google::Gax::VERSION_MATCHER.match(File.basename(dir)) }
+        .select { |dir| File.exist?(dir + ".rb") }
+        .map { |dir| File.basename(dir) }
+
+      ##
+      # Service that implements Google Cloud Speech API.
+      #
+      # @param version [Symbol, String]
+      #   The major version of the service to be used. By default :v1
+      #   is used.
+      # @overload
+      #   @param credentials [Google::Gax::Credentials, String, Hash, GRPC::Core::Channel, GRPC::Core::ChannelCredentials, Proc]
+      #     Provides the means for authenticating requests made by the client. This parameter can
+      #     be many types.
+      #     A `Google::Gax::Credentials` uses a the properties of its represented keyfile for
+      #     authenticating requests made by this client.
+      #     A `String` will be treated as the path to the keyfile to be used for the construction of
+      #     credentials for this client.
+      #     A `Hash` will be treated as the contents of a keyfile to be used for the construction of
+      #     credentials for this client.
+      #     A `GRPC::Core::Channel` will be used to make calls through.
+      #     A `GRPC::Core::ChannelCredentials` for the setting up the RPC client. The channel credentials
+      #     should already be composed with a `GRPC::Core::CallCredentials` object.
+      #     A `Proc` will be used as an updater_proc for the Grpc channel. The proc transforms the
+      #     metadata for requests, generally, to give OAuth credentials.
+      #   @param scopes [Array<String>]
+      #     The OAuth scopes for this service. This parameter is ignored if
+      #     an updater_proc is supplied.
+      #   @param client_config [Hash]
+      #     A Hash for call options for each method. See
+      #     Google::Gax#construct_settings for the structure of
+      #     this data. Falls back to the default config if not specified
+      #     or the specified config is missing data points.
+      #   @param timeout [Numeric]
+      #     The default timeout, in seconds, for calls made through this client.
+      def self.new(*args, version: :v1, **kwargs)
+        unless AVAILABLE_VERSIONS.include?(version.to_s.downcase)
+          raise "The version: #{version} is not available. The available versions " \
+            "are: [#{AVAILABLE_VERSIONS.join(", ")}]"
         end
 
-        Google::Cloud::Speech::Project.new(
-          Google::Cloud::Speech::Service.new(
-            project, credentials, timeout: timeout,
-                                  client_config: client_config))
+        require "#{FILE_DIR}/#{version.to_s.downcase}"
+        version_module = Google::Cloud::Speech
+          .constants
+          .select {|sym| sym.to_s.downcase == version.to_s.downcase}
+          .first
+        Google::Cloud::Speech.const_get(version_module).new(*args, **kwargs)
       end
     end
   end
