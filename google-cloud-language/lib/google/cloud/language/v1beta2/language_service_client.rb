@@ -56,10 +56,10 @@ module Google
             "https://www.googleapis.com/auth/cloud-platform"
           ].freeze
 
-          # @param credentials [Google::Gax::Credentials, String, Hash, GRPC::Core::Channel, GRPC::Core::ChannelCredentials, Proc]
+          # @param credentials [Google::Auth::Credentials, String, Hash, GRPC::Core::Channel, GRPC::Core::ChannelCredentials, Proc]
           #   Provides the means for authenticating requests made by the client. This parameter can
           #   be many types.
-          #   A `Google::Gax::Credentials` uses a the properties of its represented keyfile for
+          #   A `Google::Auth::Credentials` uses a the properties of its represented keyfile for
           #   authenticating requests made by this client.
           #   A `String` will be treated as the path to the keyfile to be used for the construction of
           #   credentials for this client.
@@ -73,7 +73,7 @@ module Google
           # @param scopes [Array<String>]
           #   The OAuth scopes for this service. This parameter is ignored if
           #   an updater_proc is supplied.
-          # @param client_config[Hash]
+          # @param client_config [Hash]
           #   A Hash for call options for each method. See
           #   Google::Gax#construct_settings for the structure of
           #   this data. Falls back to the default config if not specified
@@ -105,7 +105,7 @@ module Google
               credentials ||= chan_creds
               credentials ||= updater_proc
             end
-            if service_path || port
+            if service_path != SERVICE_ADDRESS || port != DEFAULT_SERVICE_PORT
               warn "`service_path` and `port` parameters are deprecated and will be removed"
             end
 
@@ -123,13 +123,13 @@ module Google
             if credentials.is_a?(Proc)
               updater_proc = credentials
             end
-            if credentials.is_a?(Google::Gax::Credentials)
+            if credentials.is_a?(Google::Auth::Credentials)
               updater_proc = credentials.updater_proc
             end
 
             google_api_client = "gl-ruby/#{RUBY_VERSION}"
             google_api_client << " #{lib_name}/#{lib_version}" if lib_name
-            google_api_client << " gapic/0.6.8 gax/#{Google::Gax::VERSION}"
+            google_api_client << " gapic/0.1.0 gax/#{Google::Gax::VERSION}"
             google_api_client << " grpc/#{GRPC::VERSION}"
             google_api_client.freeze
 
