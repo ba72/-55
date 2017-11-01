@@ -1,4 +1,4 @@
-# Ruby Client for Google Cloud Natural Language API ([Alpha](https://github.com/GoogleCloudPlatform/google-cloud-ruby#versioning))
+# Ruby Client for Google Cloud Natural Language API ([Beta](https://github.com/GoogleCloudPlatform/google-cloud-ruby#versioning))
 
 [Google Cloud Natural Language API][Product Documentation]:
 Google Cloud Natural Language API provides natural language understanding
@@ -6,6 +6,10 @@ technologies to developers. Examples include sentiment analysis, entity
 recognition, and text annotations.
 - [Client Library Documentation][]
 - [Product Documentation][]
+
+*This release, 0.28.0, introduces breaking changes relative to the previous
+release, 0.27.1. For more details and instructions to migrate your code, please
+visit the [migration guide](https://cloud.google.com/natural-language/docs/ruby-client-migration).*
 
 ## Quick Start
 In order to use this library, you first need to go through the following
